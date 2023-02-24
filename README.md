@@ -16,6 +16,15 @@ This is frontend starter project for nodejs-aws mentoring program. It uses the f
 - [Prettier](https://prettier.io/) as a code formatting tool
 - [TypeScript](https://www.typescriptlang.org/) as a type checking tool
 
+## CloudFront URL
+
+https://d10nlmvsqgkbgg.cloudfront.net/
+
+## S3-website
+
+http://aws-shop-react-redux-bucket.s3-website.eu-central-1.amazonaws.com/ (403 Forbidden because of lack of policy)
+
+
 ## Available Scripts
 
 ### `start`
@@ -69,3 +78,4 @@ Combination of `cloudfront:setup` and `cloudfront:build:deploy` commands with or
 ### `serverless:remove`
 
 Remove an entire stack configured in `serverless.yml` via CloudFormation.
+
