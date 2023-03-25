@@ -1,7 +1,6 @@
 import React from "react";
-import axios from "axios";
-import Typography from "@mui/material/Typography";
-import Box from "@mui/material/Box";
+import axios, { AxiosError } from "axios";
+import { Snackbar, Alert, Box, Typography } from "@mui/material";
 
 type CSVFileImportProps = {
   url: string;
@@ -10,6 +9,7 @@ type CSVFileImportProps = {
 
 export default function CSVFileImport({ url, title }: CSVFileImportProps) {
   const [file, setFile] = React.useState<File>();
+  const [error, setError] = React.useState<string | null>();
 
   const onFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const files = e.target.files;
@@ -30,14 +30,36 @@ export default function CSVFileImport({ url, title }: CSVFileImportProps) {
       return Promise.reject("File was not found");
     }
 
-    // Get the presigned URL
-    const response = await axios({
-      method: "GET",
-      url,
-      params: {
-        name: encodeURIComponent(file.name),
-      },
-    });
+    const authorizationToken = localStorage.getItem("authorization_token");
+    const headers = authorizationToken
+      ? {
+          Authorization: `Basic ${authorizationToken}`,
+        }
+      : undefined;
+
+    let response;
+
+    try {
+      response = await axios({
+        method: "GET",
+        url,
+        headers,
+        params: {
+          name: encodeURIComponent(file.name),
+        },
+      });
+    } catch (e) {
+      if (e instanceof AxiosError) {
+        const status = e.response?.status;
+
+        if (status === 401 || status === 403) {
+          setError(
+            `The request failed with ${status} status: ${e.response?.data?.message}`
+          );
+        }
+      }
+      return;
+    }
 
     console.log("File to upload: ", file.name);
     console.log("Uploading to: ", response.data);
@@ -57,6 +79,9 @@ export default function CSVFileImport({ url, title }: CSVFileImportProps) {
       <Typography variant="h6" gutterBottom>
         {title}
       </Typography>
+      <Snackbar open={!!error} autoHideDuration={2000}>
+        <Alert severity="error">{error}</Alert>
+      </Snackbar>
       {!file ? (
         <input type="file" onChange={onFileChange} />
       ) : (
